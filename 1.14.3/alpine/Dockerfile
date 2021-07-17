@@ -1,122 +1,68 @@
-# Build stage for BerkeleyDB
-FROM alpine as berkeleydb
+FROM alpine:latest
 
-ENV BERKELEYDB_VERSION=5.1.29.NC
-ENV BERKELEYDB_SHA256SUM=08238e59736d1aacdd47cfb8e68684c695516c37f4fbe1b8267dde58dc3a576c
-
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add autoconf
-RUN apk --no-cache add automake
-RUN apk --no-cache add build-base
-RUN apk del libressl && apk add --no-cache openssl && apk fix
-
-ADD http://download.oracle.com/berkeley-db/db-${BERKELEYDB_VERSION}.tar.gz ./
-RUN \
-  echo "${BERKELEYDB_SHA256SUM}  db-${BERKELEYDB_VERSION}.tar.gz" | sha256sum -c - && \
-  tar xf db-${BERKELEYDB_VERSION}.tar.gz
-
-WORKDIR /db-${BERKELEYDB_VERSION}/build_unix
-
-RUN \
-sed s/__atomic_compare_exchange/__atomic_compare_exchange_db/g -i ../src/dbinc/atomic.h
-
-RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local/bdb
-RUN make -j4
-RUN make install
-RUN rm -rf ${BERKELEYDB_PREFIX}/docs
-
-# Build stage for Dogecoin Core
-FROM alpine as dogecoin-core
-
-ENV DOGECOIN_VERSION=1.14.3
-ENV DOGECOIN_PREFIX=/opt/dogecoin-${DOGECOIN_VERSION}
-ENV DOGECOIN_DOWNLOAD_SHA256 01039ad91adf7d2815ab07b45f751426e1c8e230f868dc878d4f5ff8aefeee47
-ENV DOGECOIN_GITIAN_URL_BASE=https://github.com/dogecoin/gitian.sigs/tree/master/
-
-COPY --from=berkeleydb /usr/local/bdb /usr/local/bdb
-
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add autoconf
-RUN apk --no-cache add automake
-RUN apk --no-cache add pkgconfig
-RUN apk --no-cache add boost-dev
-RUN apk --no-cache add build-base
-RUN apk --no-cache add chrpath
-RUN apk --no-cache add file
-RUN apk --no-cache add gnupg
-RUN apk --no-cache add libevent-dev
-RUN apk --no-cache add openssl-dev
-RUN apk --no-cache add libtool
-RUN apk --no-cache add linux-headers
-RUN apk --no-cache add zeromq-dev
-RUN apk --no-cache add python3
-RUN set -ex \
-  && for key in \
-    E9E1D8252D569306 \
-  ; do \
-      gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" || \
-      gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
-      gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" ; \
-  done
-
-RUN wget https://github.com/dogecoin/dogecoin/archive/refs/tags/v${DOGECOIN_VERSION}.tar.gz
-RUN echo "$DOGECOIN_DOWNLOAD_SHA256  v${DOGECOIN_VERSION}.tar.gz" | sha256sum -c -
-RUN tar -xzf *.tar.gz && rm *.tar.gz
-
-WORKDIR /dogecoin-${DOGECOIN_VERSION}
-
-RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
-RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
-RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
-RUN ./autogen.sh
-RUN ./configure \
-    --prefix=${DOGECOIN_PREFIX} \
-    --mandir=/usr/share/man \
-    --disable-tests \
-    --disable-bench \
-    --disable-ccache \
-    --without-gui \
-    --without-miniupnpc \
-    --disable-maintainer-mode \
-    --disable-dependency-tracking \
-    --with-libs \
-    --with-daemon \
-    --with-utils \
-      CFLAGS="-O2 -g" \
-      CXXFLAGS="-Wno-cpp -O2 -g" \
-      LDFLAGS='-L/usr/local/bdb/lib/ -static-libstdc++' \
-      CPPFLAGS='-I/usr/local/bdb/include/'
-RUN make -j4
-RUN make check -j4
-RUN make install
-RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-cli
-RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-tx
-RUN strip ${DOGECOIN_PREFIX}/bin/dogecoind
-RUN strip ${DOGECOIN_PREFIX}/lib/libdogecoinconsensus.a
-RUN strip ${DOGECOIN_PREFIX}/lib/libdogecoinconsensus.so.0.0.0
-
-# Build stage for compiled artifacts
-FROM alpine
+ENV LANG=C.UTF-8
 
 LABEL maintainer.0="xanimo (@xanimo)"
 
-RUN adduser -S dogecoin
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk --no-cache add \
-  boost-filesystem \
-  boost-system \
-  boost-thread \
-  boost-dev \
-  libevent-dev \
-  libzmq \
-  su-exec 
-
-ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_VERSION=1.14.3
+ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_PREFIX=/opt/dogecoin-${DOGECOIN_VERSION}
 ENV PATH=${DOGECOIN_PREFIX}/bin:$PATH
+ENV GLIBC_PACKAGE_VERSION="2.33-r0"
+ENV GLIBC_BASE_URL="https://github.com/sgerrand/alpine-pkg-glibc/releases/download"
+ENV GLIBC_BASE_PACKAGE="glibc-$GLIBC_PACKAGE_VERSION.apk"
+ENV GLIBC_BIN_PACKAGE="glibc-bin-$GLIBC_PACKAGE_VERSION.apk"
+ENV GLIBC_I18N_PACKAGE="glibc-i18n-$GLIBC_PACKAGE_VERSION.apk"
+ENV GLIBC_BASE_PACKAGE_URL="$GLIBC_BASE_URL/$GLIBC_PACKAGE_VERSION/$GLIBC_BASE_PACKAGE" 
+ENV GLIBC_BIN_PACKAGE_URL="$GLIBC_BASE_URL/$GLIBC_PACKAGE_VERSION/$GLIBC_BIN_PACKAGE" 
+ENV GLIBC_I18N_PACKAGE_URL="$GLIBC_BASE_URL/$GLIBC_PACKAGE_VERSION/$GLIBC_I18N_PACKAGE"
+ARG TARGETPLATFORM
 
-COPY --from=dogecoin-core /opt /opt
+RUN set -x \
+  && apk add --no-cache --virtual=.build-dependencies wget ca-certificates \
+  && echo \
+  "-----BEGIN PUBLIC KEY-----\
+  MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApZ2u1KJKUu/fW4A25y9m\
+  y70AGEa/J3Wi5ibNVGNn1gT1r0VfgeWd0pUybS4UmcHdiNzxJPgoWQhV2SSW1JYu\
+  tOqKZF5QSN6X937PTUpNBjUvLtTQ1ve1fp39uf/lEXPpFpOPL88LKnDBgbh7wkCp\
+  m2KzLVGChf83MS0ShL6G9EQIAUxLm99VpgRjwqTQ/KfzGtpke1wqws4au0Ab4qPY\
+  KXvMLSPLUp7cfulWvhmZSegr5AdhNw5KNizPqCJT8ZrGvgHypXyiFvvAH5YRtSsc\
+  Zvo9GI2e2MaZyo9/lvb+LbLEJZKEQckqRj4P26gmASrZEPStwc+yqy1ShHLA0j6m\
+  1QIDAQAB\
+  -----END PUBLIC KEY-----" | sed 's/   */\n/g' > "/etc/apk/keys/sgerrand.rsa.pub" \
+  && wget ${GLIBC_BASE_PACKAGE_URL} ${GLIBC_BIN_PACKAGE_URL} ${GLIBC_I18N_PACKAGE_URL} \
+  && apk add --no-cache ${GLIBC_BASE_PACKAGE} ${GLIBC_BIN_PACKAGE} ${GLIBC_I18N_PACKAGE} \
+  && rm "/etc/apk/keys/sgerrand.rsa.pub" \
+  && mkdir /usr/glibc-compat/lib/locale \
+  && /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 ${LANG} || true \
+  && echo "export LANG=${LANG}" > /etc/profile.d/locale.sh \
+  && apk del glibc-i18n \
+  && rm "/root/.wget-hsts" \
+  && apk del .build-dependencies \
+  && rm ${GLIBC_BASE_PACKAGE} ${GLIBC_BIN_PACKAGE} ${GLIBC_I18N_PACKAGE}
+
+RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories \
+  && adduser -S dogecoin \
+  && set -x \
+  && apk add --no-cache wget gnupg su-exec \
+  && if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then export TARGETPLATFORM=x86_64-linux-gnu; fi \
+  && if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then export TARGETPLATFORM=aarch64-linux-gnu; fi \
+  && if [ "${TARGETPLATFORM}" = "linux/arm/v7" ]; then export TARGETPLATFORM=arm-linux-gnueabihf; fi \
+  && for key in \
+  E9E1D8252D569306 \
+  ; do \
+  gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key" || \
+  gpg --batch --keyserver pgp.mit.edu --recv-keys "$key" || \
+  gpg --batch --keyserver keyserver.pgp.com --recv-keys "$key" ; \
+  done \
+  && wget https://github.com/dogecoin/dogecoin/releases/download/v${DOGECOIN_VERSION}/dogecoin-${DOGECOIN_VERSION}-${TARGETPLATFORM}.tar.gz \
+  && wget https://raw.githubusercontent.com/xanimo/dogecoin-sha256sum/main/${DOGECOIN_VERSION}/SHA256SUMS.asc \
+  && gpg --verify SHA256SUMS.asc \
+  && grep " dogecoin-${DOGECOIN_VERSION}-${TARGETPLATFORM}.tar.gz" SHA256SUMS.asc | sha256sum -c - \
+  && tar -xzf *.tar.gz -C /opt \
+  && rm *.tar.gz *.asc \
+  && rm -rf /opt/dogecoin-${DOGECOIN_VERSION}/bin/dogecoin-qt
+
 COPY docker-entrypoint.sh /entrypoint.sh
 
 RUN ["chmod", "+x", "/entrypoint.sh"]
