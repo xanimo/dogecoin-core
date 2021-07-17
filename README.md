@@ -216,3 +216,8 @@ curl --data-binary '{"jsonrpc":"1.0","id":"1","method":"getnetworkinfo","params"
 ## Docker
 
 This image is officially supported on Docker version 17.09, with support for older versions provided on a best-effort basis.
+
+[docker-hub-url]: https://hub.docker.com/r/xanimo/dogecoin-core
+[docker-pulls-image]: https://img.shields.io/docker/pulls/xanimo/dogecoin-core.svg?style=flat-square
+[docker-size-image]: https://img.shields.io/docker/image-size/xanimo/dogecoin-core?style=flat-square
+[docker-stars-image]: https://img.shields.io/docker/stars/xanimo/dogecoin-core.svg?style=flat-square
