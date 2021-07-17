@@ -34,7 +34,6 @@ RUN set -x \
   && wget ${GLIBC_BASE_PACKAGE_URL} ${GLIBC_BIN_PACKAGE_URL} ${GLIBC_I18N_PACKAGE_URL} \
   && apk add --no-cache ${GLIBC_BASE_PACKAGE} ${GLIBC_BIN_PACKAGE} ${GLIBC_I18N_PACKAGE} \
   && rm "/etc/apk/keys/sgerrand.rsa.pub" \
-  && mkdir /usr/glibc-compat/lib/locale \
   && /usr/glibc-compat/bin/localedef --force --inputfile POSIX --charmap UTF-8 ${LANG} || true \
   && echo "export LANG=${LANG}" > /etc/profile.d/locale.sh \
   && apk del glibc-i18n \
