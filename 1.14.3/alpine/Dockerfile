@@ -1,9 +1,10 @@
 FROM alpine:latest
 
-ENV LANG=C.UTF-8
-
 LABEL maintainer.0="xanimo (@xanimo)"
 
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 ENV DOGECOIN_VERSION=1.14.3
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_PREFIX=/opt/dogecoin-${DOGECOIN_VERSION}
