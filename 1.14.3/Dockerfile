@@ -1,4 +1,4 @@
-FROM debian:sid-slim
+FROM amd64/debian:bullseye-20210621-slim
 
 LABEL maintainer.0="xanimo (@xanimo)"
 
