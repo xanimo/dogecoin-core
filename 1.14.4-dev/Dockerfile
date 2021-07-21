@@ -1,0 +1,119 @@
+# Build stage for BerkeleyDB
+FROM ubuntu:focal as berkeleydb
+
+ENV BERKELEYDB_VERSION=5.1.29.NC
+ENV BERKELEYDB_SHA256SUM=08238e59736d1aacdd47cfb8e68684c695516c37f4fbe1b8267dde58dc3a576c
+
+RUN apt-get update -y \
+  && apt-get install -y autotools-dev automake build-essential \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ADD http://download.oracle.com/berkeley-db/db-${BERKELEYDB_VERSION}.tar.gz ./
+RUN \
+  echo "${BERKELEYDB_SHA256SUM}  db-${BERKELEYDB_VERSION}.tar.gz" | sha256sum -c - && \
+  tar xf db-${BERKELEYDB_VERSION}.tar.gz
+
+WORKDIR /db-${BERKELEYDB_VERSION}/build_unix
+
+RUN \
+sed s/__atomic_compare_exchange/__atomic_compare_exchange_db/g -i ../src/dbinc/atomic.h
+
+RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local/bdb
+RUN make -j$(nproc)
+RUN make install
+RUN rm -rf ${BERKELEYDB_PREFIX}/docs
+
+# Build stage for Dogecoin Core
+FROM ubuntu:focal as build
+
+COPY --from=berkeleydb /usr/local/bdb /usr/local/bdb
+
+RUN apt-get update -y \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y git curl libtool pkg-config libevent-dev bsdmainutils autotools-dev automake build-essential libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev libssl-dev python3 \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV DOGECOIN_VERSION=1.14.4-dev
+ENV DOGECOIN_PREFIX=/app
+
+RUN git clone -b ${DOGECOIN_VERSION} https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
+
+WORKDIR /dogecoin-${DOGECOIN_VERSION}
+
+RUN git checkout ${DOGECOIN_VERSION} && git reset --hard f12e2a6ff7d7e2713ac0d461ad63431bcf78cae5
+
+RUN make HOST=x86_64-pc-linux-musl NO_QT=1 NO_UPNP=1 -C depends
+RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
+RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
+RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
+RUN ./autogen.sh
+RUN CONFIG_SITE="${PWD}/depends/x86_64-pc-linux-musl/share/config.site" ./configure \
+  --build=x86_64-unknown-linux-gnu \
+  --host=x86_64-pc-linux-musl \
+  --target=x86_64-pc-linux-musl \
+  --prefix=${DOGECOIN_PREFIX} \
+    --mandir=/usr/share/man \
+    --without-gui \
+    --disable-gui-tests \
+    --without-upnpc \
+    --disable-bench \
+    --disable-ccache \
+    --disable-maintainer-mode \
+    --disable-dependency-tracking \
+    --with-libs \
+    --with-daemon \
+    --with-utils \
+    --enable-static-nss \
+    CC=gcc \ 
+    CXX="g++ -std=c++11" \
+    CFLAGS="-g0 -Os -static --static -fPIC" \
+    CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
+    CPPFLAGS="-I/usr/local/bdb/include/ -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS" \
+    LDFLAGS="-L/usr/local/bdb/lib/ -s -static-libgcc -static-libstdc++ -Wl,-O2"
+RUN make -j$(nproc)
+RUN make check -j$(nproc)
+RUN make install
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-cli
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-tx
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoind
+RUN strip ${DOGECOIN_PREFIX}/lib/libdogecoinconsensus.a
+
+# Build stage for compiled artifacts
+FROM alpine AS result
+
+LABEL maintainer.0="xanimo (@xanimo)"
+
+RUN adduser -S dogecoin
+RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
+RUN apk --no-cache add \
+  boost-filesystem \
+  boost-system \
+  boost-thread \
+  libevent \
+  libzmq \
+  su-exec
+
+ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
+ENV DOGECOIN_VERSION=1.14.4-dev
+ENV PATH=/app/bin:$PATH
+
+RUN mkdir -p /app \
+  && chown -R nobody:nogroup /app
+
+WORKDIR /app
+
+COPY --from=build /app /app
+COPY docker-entrypoint.sh /entrypoint.sh
+RUN ["chmod", "+x", "/entrypoint.sh"]
+
+VOLUME ["/home/dogecoin/.dogecoin"]
+
+EXPOSE 22555 22556 44555 44556 18444
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Set permissions for everything added to /app
+RUN chmod -R 755 /app/*
+
+CMD ["dogecoind"]
