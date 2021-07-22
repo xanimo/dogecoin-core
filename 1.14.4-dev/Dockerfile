@@ -37,11 +37,11 @@ RUN apt-get update -y \
 ENV DOGECOIN_VERSION=1.14.4-dev
 ENV DOGECOIN_PREFIX=/app
 
-RUN git clone -b ${DOGECOIN_VERSION} https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
+RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
 
-RUN git checkout ${DOGECOIN_VERSION} && git reset --hard 25d09b96572e2d6dcf009359bdbd019c76f66306
+RUN git checkout 25d09b96572e2d6dcf009359bdbd019c76f66306
 
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
