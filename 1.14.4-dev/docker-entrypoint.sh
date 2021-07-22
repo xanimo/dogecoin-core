@@ -17,7 +17,7 @@ if [ $(echo "$1" | cut -c1) = "-" ] || [ "$1" = "dogecoind" ]; then
   set -- "$@" -datadir="$DOGECOIN_DATA"
 fi
 
-if [ "$1" = "dogecoind" ] || [ "$1" = "dogecoin-cli" ] || [ "$1" = "dogecoin-tx" ]; then
+if [ "$1" = "dogecoind" ] || [ "$1" = "dogecoin-cli" ] || [ "$1" = "dogecoin-tx" ] || [ "$1" = "test-dogecoin" ]; then
   echo
   exec su-exec dogecoin "$@"
 fi
