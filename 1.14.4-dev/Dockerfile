@@ -45,28 +45,10 @@ RUN git checkout ${DOGECOIN_VERSION} && git reset --hard f12e2a6ff7d7e2713ac0d46
 
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
-# RUN ln -s /lib/ld-musl-x86_64.so.1 /usr/bind/ld
 RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
 RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
 RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
 RUN ./autogen.sh
-# RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
-#   --host=x86_64-linux-musl \
-#   --target=x86_64-linux-musl \
-#   --mandir=/usr/share/man \
-#   --without-gui \
-#   --disable-gui-tests \
-#   --without-upnpc \
-#   --disable-bench \
-#   --disable-ccache \
-#   --disable-maintainer-mode \
-#   LD_LIBRARY_PATH="/usr/lib/ld-musl-x86_64.so.1" \
-#   CC="x86_64-linux-musl-gcc" \
-#   CXX="x86_64-linux-musl-g++" \
-#   CFLAGS="-g0 -Os -static --static -fPIC" \
-#   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
-#   CPPFLAGS="-I/usr/include/x86_64-linux-musl/ -I/usr/local/bdb/include/ -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS" \
-#   LDFLAGS="-L/usr/lib/x86_64-linux-musl/ -L/usr/local/bdb/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
   --host=x86_64-linux-musl \
   --build=x86_64-linux-gnu \
@@ -111,24 +93,25 @@ RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswit
 
 RUN adduser -S dogecoin
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
-RUN apk upgrade && apk --no-cache add \
+RUN apk update && apk upgrade && apk --no-cache add \
   boost-filesystem \
   boost-system \
   boost-thread \
+  dhclient \
   libevent \
   libzmq \
   su-exec \
   linux-headers \
-  musl-dev \
-  python3 \
-  python3-dev \
-  py3-pip \
-  zeromq-dev \
-  curl \
-  gcc \
-  tor \
-  && pip3 install litecoin_scrypt \
+  iputils \
+  drill \
+  openrc \
+  util-linux \
+  rsync \
   && echo "en_US.UTF-8 UTF-8" > /etc/profile.d/locale.sh
+
+COPY dhclient.conf /etc/dhcp/dhclient.conf
+COPY interfaces /etc/network/interfaces
+COPY resolv.conf /etc/resolv.conf
 
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_VERSION=1.14.4-dev
@@ -138,20 +121,16 @@ RUN mkdir -p /app \
 
 ENV PATH=/app/bin:$PATH
 
-# COPY --from=build /app/dogecoin-${DOGECOIN_VERSION} /app/dogecoin-${DOGECOIN_VERSION}
-# RUN /app/dogecoin-${DOGECOIN_VERSION}/qa/pull-tester/rpc-tests.py -extended
-
 WORKDIR /app
 
 COPY --from=build /app /app
 COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
-COPY torrc.default /etc/tor/torrc.default
-RUN chown -R tor /etc/tor
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
 
 VOLUME ["/home/dogecoin/.dogecoin"]
+VOLUME ["/sys/fs/cgroup"]
 
 EXPOSE 22555 22556 44555 44556 18444 9050 9051
 

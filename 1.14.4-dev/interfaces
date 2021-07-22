@@ -1,0 +1,13 @@
+auto lo
+iface lo inet loopback
+
+auto eth0
+
+iface eth0 inet static
+        address 192.168.1.150/24
+        gateway 192.168.1.1
+
+iface eth0 inet6 static
+        address 2001:470:ffff:ff::2/64
+        gateway 2001:470:ffff:ff::1
+        pre-up echo 0 > /proc/sys/net/ipv6/conf/eth0/accept_ra
