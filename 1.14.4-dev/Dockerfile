@@ -41,7 +41,7 @@ RUN git clone -b ${DOGECOIN_VERSION} https://github.com/xanimo/dogecoin.git /dog
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
 
-RUN git checkout ${DOGECOIN_VERSION} && git reset --hard f12e2a6ff7d7e2713ac0d461ad63431bcf78cae5
+RUN git checkout ${DOGECOIN_VERSION} && git reset --hard 25d09b96572e2d6dcf009359bdbd019c76f66306
 
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
@@ -79,17 +79,13 @@ RUN strip ${DOGECOIN_PREFIX}/bin/dogecoind
 RUN strip ${DOGECOIN_PREFIX}/lib/libdogecoinconsensus.a
 
 # Build stage for compiled artifacts
-FROM alpine
+FROM alpine:latest
 
 LABEL maintainer.0="xanimo (@xanimo)"
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-
-# Hotfix for glibc hack that fixes the order of DNS resolving (i.e. check /etc/hosts first and then lookup DNS-servers).
-# To fix this we just create /etc/nsswitch.conf and add the following line:
-RUN echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf
 
 RUN adduser -S dogecoin
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
@@ -125,6 +121,7 @@ WORKDIR /app
 
 COPY --from=build /app /app
 COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
+COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
