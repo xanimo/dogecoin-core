@@ -2,9 +2,7 @@
 FROM ubuntu:focal as build
 
 RUN apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y git curl libtool libtool-bin pkg-config libevent-dev bsdmainutils autotools-dev automake build-essential libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev libssl-dev python3 \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y git curl libtool libtool-bin pkg-config bsdmainutils autotools-dev automake build-essential python3
 
 ENV DOGECOIN_VERSION=1.14.4-dev
 ENV DOGECOIN_PREFIX=/app
@@ -71,12 +69,6 @@ RUN apk update && apk upgrade && apk --no-cache add \
   libevent \
   libzmq \
   su-exec \
-  linux-headers \
-  iputils \
-  drill \
-  openrc \
-  util-linux \
-  rsync \
   && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
 
 COPY dhclient.conf /etc/dhcp/dhclient.conf
