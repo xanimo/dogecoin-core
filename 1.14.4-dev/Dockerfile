@@ -38,10 +38,9 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   CROSS_COMPILE=x86_64-linux-musl- \
   CHOST=x86_64-linux-musl \
   CFLAGS="-g0 -Os -static --static -fPIC" \
-  CPPFLAGS="-I/usr/local/bdb/include/" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
   LIBDIR=/usr/lib/x86_64-linux-musl/ \
-  LDFLAGS="-L/usr/local/bdb/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+  LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
 RUN make install
@@ -60,20 +59,9 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 RUN adduser -S dogecoin
-RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
 RUN apk update && apk upgrade && apk --no-cache add \
-  boost-filesystem \
-  boost-system \
-  boost-thread \
-  dhclient \
-  libevent \
-  libzmq \
   su-exec \
   && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
-
-COPY dhclient.conf /etc/dhcp/dhclient.conf
-COPY interfaces /etc/network/interfaces
-COPY resolv.conf /etc/resolv.conf
 
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_VERSION=1.14.4-dev
@@ -95,7 +83,7 @@ RUN ["chmod", "+x", "/entrypoint.sh"]
 VOLUME ["/home/dogecoin/.dogecoin"]
 VOLUME ["/sys/fs/cgroup"]
 
-EXPOSE 22555 22556 44555 44556 18444 9050 9051
+EXPOSE 22555 22556 44555 44556
 
 ENTRYPOINT ["/entrypoint.sh"]
 
