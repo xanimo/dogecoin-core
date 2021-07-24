@@ -30,16 +30,14 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   --disable-bench \
   --disable-ccache \
   --disable-maintainer-mode \
-  # on the fence as to benefit of static nss...
-  # --enable-static-nss \
   LD_LIBRARY_PATH="/usr/lib/ld-musl-x86_64.so.1" \
   CC="musl-gcc -g -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs" \
-  CXX=musl-g++ \  
-  CROSS_COMPILE=x86_64-linux-musl- \
-  CHOST=x86_64-linux-musl \
+  CXX="musl-g++" \
+  CROSS_COMPILE="x86_64-linux-musl-" \
+  CHOST="x86_64-linux-musl" \
   CFLAGS="-g0 -Os -static --static -fPIC" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
-  LIBDIR=/usr/lib/x86_64-linux-musl/ \
+  LIBDIR="/usr/lib/x86_64-linux-musl/" \
   LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
