@@ -1,33 +1,5 @@
-# # Build stage for BerkeleyDB
-# FROM ubuntu:focal as berkeleydb
-
-# ENV BERKELEYDB_VERSION=5.1.29.NC
-# ENV BERKELEYDB_SHA256SUM=08238e59736d1aacdd47cfb8e68684c695516c37f4fbe1b8267dde58dc3a576c
-
-# RUN apt-get update -y \
-#   && apt-get install -y autotools-dev automake build-essential musl musl-dev \
-#   && apt-get clean \
-#   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# ADD http://download.oracle.com/berkeley-db/db-${BERKELEYDB_VERSION}.tar.gz ./
-# RUN \
-#   echo "${BERKELEYDB_SHA256SUM}  db-${BERKELEYDB_VERSION}.tar.gz" | sha256sum -c - && \
-#   tar xf db-${BERKELEYDB_VERSION}.tar.gz
-
-# WORKDIR /db-${BERKELEYDB_VERSION}/build_unix
-
-# RUN \
-# sed s/__atomic_compare_exchange/__atomic_compare_exchange_db/g -i ../src/dbinc/atomic.h
-
-# RUN ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=/usr/local/bdb
-# RUN make -s -j$(nproc)
-# RUN make install
-# RUN rm -rf ${BERKELEYDB_PREFIX}/docs
-
 # Build stage for Dogecoin Core
 FROM ubuntu:focal as build
-
-# COPY --from=berkeleydb /usr/local/bdb /usr/local/bdb
 
 RUN apt-get update -y \
   && DEBIAN_FRONTEND=noninteractive apt-get install -y git curl libtool libtool-bin pkg-config libevent-dev bsdmainutils autotools-dev automake build-essential libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev libssl-dev python3 \
@@ -41,7 +13,7 @@ RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSIO
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
 
-RUN git checkout f4f7759649941820117d8c22f3d0a5b93cd8a200
+RUN git fetch && git checkout 9ba6538b2af01b08cfe5bb2719a556ec3e93ffa0
 
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
@@ -60,17 +32,18 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   --disable-bench \
   --disable-ccache \
   --disable-maintainer-mode \
+  # on the fence as to benefit of static nss...
+  # --enable-static-nss \
   LD_LIBRARY_PATH="/usr/lib/ld-musl-x86_64.so.1" \
   CC="musl-gcc -g -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs" \
-  CXX=musl-g++ \
+  CXX=musl-g++ \  
   CROSS_COMPILE=x86_64-linux-musl- \
   CHOST=x86_64-linux-musl \
   CFLAGS="-g0 -Os -static --static -fPIC" \
-  # CPPFLAGS="-I/usr/local/bdb/include/" \
+  CPPFLAGS="-I/usr/local/bdb/include/" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
   LIBDIR=/usr/lib/x86_64-linux-musl/ \
-  # LDFLAGS="-L/usr/local/bdb/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
-  LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+  LDFLAGS="-L/usr/local/bdb/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
 RUN make install
@@ -84,9 +57,9 @@ FROM alpine:latest
 
 LABEL maintainer.0="xanimo (@xanimo)"
 
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 RUN adduser -S dogecoin
 RUN sed -i 's/http\:\/\/dl-cdn.alpinelinux.org/https\:\/\/alpine.global.ssl.fastly.net/g' /etc/apk/repositories
@@ -104,7 +77,7 @@ RUN apk update && apk upgrade && apk --no-cache add \
   openrc \
   util-linux \
   rsync \
-  && echo "en_US.UTF-8 UTF-8" > /etc/profile.d/locale.sh
+  && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
 
 COPY dhclient.conf /etc/dhcp/dhclient.conf
 COPY interfaces /etc/network/interfaces
@@ -134,7 +107,6 @@ EXPOSE 22555 22556 44555 44556 18444 9050 9051
 
 ENTRYPOINT ["/entrypoint.sh"]
 
-# Set permissions for everything added to /app
 RUN chmod -R 755 /app/*
 
 CMD ["dogecoind"]
