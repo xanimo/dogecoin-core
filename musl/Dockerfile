@@ -40,9 +40,6 @@ RUN git fetch && git checkout 9ba6538b2af01b08cfe5bb2719a556ec3e93ffa0
 
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
-RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
-RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
-RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
 RUN ./autogen.sh
 
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
@@ -58,17 +55,17 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   --disable-ccache \
   --disable-maintainer-mode \
   --enable-static-nss \
-  --with-sysroot="/root/source/repos/mussel/sysroot/" \
-  LD_LIBRARY_PATH="/root/source/repos/mussel/toolchain/lib/" \
+  --with-sysroot="/mussel/sysroot/" \
+  LD_LIBRARY_PATH="/mussel/toolchain/lib/" \
   CC="x86_64-linux-musl-gcc" \
   CXX="x86_64-linux-musl-g++" \
   CROSS_COMPILE="x86_64-linux-musl-" \
   CHOST="x86_64-linux-musl" \
-  CPPFLAGS="-I/root/source/repos/mussel/toolchain/include/ -I/root/source/repos/mussel/sysroot/usr/include/" \
+  CPPFLAGS="-I/mussel/toolchain/include/ -I/mussel/sysroot/usr/include/" \
   CFLAGS="-g0 -Os -static --static -fPIC" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
   LIBDIR="/mussel/toolchain/lib/" \
-  LDFLAGS="-L/root/source/repos//mussel/toolchain/lib/ -L/root/source/repos//mussel/sysroot/usr/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+  LDFLAGS="-L/mussel/toolchain/lib/ -L/mussel/sysroot/usr/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
 RUN make install
