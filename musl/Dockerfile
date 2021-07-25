@@ -44,9 +44,11 @@ RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
 RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
 RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
 RUN ./autogen.sh
+
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
   --host=x86_64-linux-musl \
   --build=x86_64-linux-gnu \
+  --target=x86_64-linux-musl \
   --mandir=/usr/share/man \
   --prefix=${DOGECOIN_PREFIX} \
   --without-gui \
@@ -55,16 +57,18 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   --disable-bench \
   --disable-ccache \
   --disable-maintainer-mode \
-  LD_LIBRARY_PATH="/mussel/toolchain/bin/x86_64-linux-musl-ld" \
-  CC="x86_64-linux-musl-gcc -g -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs" \
+  --enable-static-nss \
+  --with-sysroot="/root/source/repos/mussel/sysroot/" \
+  LD_LIBRARY_PATH="/root/source/repos/mussel/toolchain/lib/" \
+  CC="x86_64-linux-musl-gcc" \
   CXX="x86_64-linux-musl-g++" \
   CROSS_COMPILE="x86_64-linux-musl-" \
   CHOST="x86_64-linux-musl" \
-  CPPFLAGS="-I/mussel/toolchain/include/" \
+  CPPFLAGS="-I/root/source/repos/mussel/toolchain/include/ -I/root/source/repos/mussel/sysroot/usr/include/" \
   CFLAGS="-g0 -Os -static --static -fPIC" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
-  LIBDIR="/mussel/toolchain/" \
-  LDFLAGS="-L/mussel/toolchain/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+  LIBDIR="/mussel/toolchain/lib/" \
+  LDFLAGS="-L/root/source/repos//mussel/toolchain/lib/ -L/root/source/repos//mussel/sysroot/usr/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
 RUN make install
