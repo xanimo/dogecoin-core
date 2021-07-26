@@ -28,4 +28,4 @@ zstd:      ./check.sh: 91: zstd: not found
 
 apt-get install -y binutils bison ccache g++ gcc glibc-source lzip m4 texinfo zstd
 ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
-apt install libtool-bin pkg-config gettext lcov
+apt install curl libbsd libunwind libtool-bin pkg-config gettext lcov autotools-dev

@@ -4,24 +4,25 @@ FROM ubuntu:focal as musl-toolchain
 ENV TZ=America/Los_Angeles
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y git bash bc binutils bison libbison-dev bzip2 build-essential>
-RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
+# RUN apt-get update -y \
+#   && DEBIAN_FRONTEND=noninteractive apt-get install -y git bash bc binutils bison libbison-dev bzip2 build-essential ccache coreutils diffutils findutils gawk git grep gzip libarchive-dev libc6 lzip libzstd-dev m4 make perl rsync sed texinfo wget xz-utils zstd
 
-RUN git clone https://github.com/xanimo/mussel /mussel
+# RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
 
-WORKDIR /mussel
+# RUN git clone https://github.com/xanimo/mussel /mussel
 
-RUN ./check.sh
+# WORKDIR /mussel
 
-RUN PKG_CONFIG_PATH=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
-RUN PKG_CONFIG_LIBDIR=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
-RUN PKG_CONFIG_SYSROOT_DIR=$MSYSROOT
+# RUN ./check.sh
 
-ENV PKG_CONFIG_SYSTEM_INCLUDE_PATH=$MSYSROOT/usr/include
-ENV PKG_CONFIG_SYSTEM_LIBRARY_PATH=$MSYSROOT/usr/lib
+# RUN ./mussel.sh x86_64 -k -l -o -p
 
-RUN ./mussel.sh x86_64 -k -l -o -p
+RUN export PKG_CONFIG_PATH=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
+RUN export PKG_CONFIG_LIBDIR=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
+RUN export PKG_CONFIG_SYSROOT_DIR=$MSYSROOT
+
+RUN export PKG_CONFIG_SYSTEM_INCLUDE_PATH=$MSYSROOT/usr/include
+RUN export PKG_CONFIG_SYSTEM_LIBRARY_PATH=$MSYSROOT/usr/lib
 
 RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
 
@@ -34,8 +35,8 @@ ENV DOGECOIN_PREFIX=/app
 RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
+
 RUN git reset --hard 9d512f36fa12cff48a031d379924837ccccd848d
-RUN apt-get install -y curl libtool-bin pkg-config gettext lcov autotools-dev libtool libtool-bin pkg-config bsdmainutils automake build-essential python3
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
 RUN ./autogen.sh
