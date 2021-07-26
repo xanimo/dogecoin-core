@@ -5,7 +5,36 @@ ENV TZ=America/Los_Angeles
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y git bash bc binutils bison libbison-dev bzip2 build-essential ccache coreutils diffutils findutils gawk git grep gzip libarchive-dev libc6 lzip libzstd-dev m4 make perl rsync sed texinfo wget xz-utils zstd
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  git \
+  bash \
+  bc \
+  binutils \
+  bison \
+  libbison-dev \
+  bzip2 \
+  build-essential \
+  ccache \
+  coreutils \
+  diffutils \
+  findutils \
+  gawk \
+  git \
+  grep \
+  gzip \
+  libarchive-dev \
+  libc6 \
+  lzip \
+  libzstd-dev \
+  m4 \
+  make \
+  perl \
+  rsync \
+  sed \
+  texinfo \
+  wget \
+  xz-utils \
+  zstd
 RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
 
 RUN git clone https://github.com/xanimo/mussel /mussel
@@ -23,8 +52,6 @@ ENV PKG_CONFIG_SYSTEM_LIBRARY_PATH=$MSYSROOT/usr/lib
 
 RUN ./mussel.sh x86_64 -k -l -o -p
 
-RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
-
 # Build stage for Dogecoin Core
 FROM musl-toolchain AS build
 RUN apt-get update && apt-get -y install git
@@ -35,11 +62,13 @@ RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSIO
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
 RUN git reset --hard 9d512f36fa12cff48a031d379924837ccccd848d
+RUN mkdir -p mussel/
+COPY --from=musl-toolchain mussel/ mussel/
+RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
 RUN apt-get install -y curl libtool-bin pkg-config gettext lcov autotools-dev libtool libtool-bin pkg-config bsdmainutils automake build-essential python3
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
 RUN ./autogen.sh
-
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
   --host=x86_64-linux-musl \
   --build=x86_64-linux-gnu \
@@ -59,11 +88,11 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   CXX="x86_64-linux-musl-g++" \
   CROSS_COMPILE="x86_64-linux-musl-" \
   CHOST="x86_64-linux-musl" \
-  CPPFLAGS="-I/mussel/toolchain/include/ -I/mussel/sysroot/usr/include/" \
+  CPPFLAGS="-I/mussel/toolchain/include/" \
   CFLAGS="-g0 -Os -static --static -fPIC" \
   CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
   LIBDIR="/mussel/toolchain/lib/" \
-  LDFLAGS="-L/mussel/toolchain/lib/ -L/mussel/sysroot/usr/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+  LDFLAGS="-L/mussel/toolchain/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)
 RUN make check -j$(nproc)
 RUN make install
