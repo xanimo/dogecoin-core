@@ -6,7 +6,7 @@ buildx:
 
 test:
 	docker run -v ${PWD}:${PWD} \
-	-it ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} \
+	-it -rm ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} \
 	test_dogecoin \
 	--build_info=1 \
 	--auto_start_dbg=1 \
@@ -16,6 +16,6 @@ test:
 	--detect_fp_exceptions=1 \
 	--detect_memory_leaks=1000 \
 	--log_format=CLF \
-	--log_level=critical \
+	--log_level=success \
 	--log_sink=${PWD}/test-log.txt \
 	--report_memory_leaks_to=${PWD}/memleaks-log.txt
