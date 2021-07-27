@@ -29,3 +29,12 @@ zstd:      ./check.sh: 91: zstd: not found
 apt-get install -y binutils bison ccache g++ gcc glibc-source lzip m4 texinfo zstd
 ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
 apt install curl libbsd libunwind libtool-bin pkg-config gettext lcov autotools-dev
+
+RUN apt-get update && apt-get install -y python3-dev
+ENV PYTHON_DEBUG=1
+RUN qa/pull-tester/install-deps.sh
+RUN /usr/bin/python3 qa/pull-tester/rpc-tests.py \
+  -extended \
+  -parallel=$(nproc) \
+  --coverage \
+  --tracerpc

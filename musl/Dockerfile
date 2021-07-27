@@ -65,7 +65,22 @@ RUN git reset --hard 9d512f36fa12cff48a031d379924837ccccd848d
 RUN mkdir -p mussel/
 COPY --from=musl-toolchain mussel/ mussel/
 RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
-RUN apt-get install -y curl libtool-bin pkg-config gettext lcov autotools-dev libtool libtool-bin pkg-config bsdmainutils automake build-essential python3
+RUN apt-get install -y \
+    curl \
+    libbsd-dev \
+    libunwind-dev \
+    libtool-bin \
+    gettext \
+    lcov \
+    autotools-dev \
+    libtool \
+    libtool-bin \
+    pkg-config \
+    bsdmainutils \
+    automake \
+    build-essential \
+    python3 \
+    python3-zmq
 RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
 RUN ./autogen.sh
@@ -90,7 +105,7 @@ RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure
   CHOST="x86_64-linux-musl" \
   CPPFLAGS="-I/mussel/toolchain/include/" \
   CFLAGS="-g0 -Os -static --static -fPIC" \
-  CXXFLAGS="-g0 -Os -static --static -fPIC -fvisibility=hidden" \
+  CXXFLAGS="-DDEBUG_LOCKORDER -g -g0 -Os -s -static --static -fPIC -fvisibility=hidden" \
   LIBDIR="/mussel/toolchain/lib/" \
   LDFLAGS="-L/mussel/toolchain/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
 RUN make -s -j$(nproc)

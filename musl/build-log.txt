@@ -1,0 +1,254 @@
+time="2021-07-26T21:01:00-07:00" level=warning msg="No output specified for docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push or to load image into docker use --load"
+#1 [internal] load build definition from Dockerfile
+#1 sha256:f7e598978dac5cf1b06588ecb61ae21e730447177fe9a5dc256db10858582424
+#1 transferring dockerfile: 4.01kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 sha256:11174bdcb85b03a8ba5da4a46eea29603baa66e265fe6fa4968830a07ea95135
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/ubuntu:focal
+#4 sha256:d8099b9e2a8d5949e23c58d0d8ac7c3b4e8785ea131ce18291d94cefef37ed4b
+#4 ...
+
+#5 [auth] library/ubuntu:pull token for registry-1.docker.io
+#5 sha256:f566c618fe945c203a59c0abee4715b24a63591c56847e6f6d010a53d7ffe60d
+#5 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 sha256:d4fb25f5b5c00defc20ce26f2efc4e288de8834ed5aa59dff877b495ba88fda6
+#3 ...
+
+#6 [auth] library/alpine:pull token for registry-1.docker.io
+#6 sha256:6216bcd6e0f0d85d2c2902ca582f6795492d7a29bb0adfab47a8e665b9b9ae26
+#6 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/ubuntu:focal
+#4 sha256:d8099b9e2a8d5949e23c58d0d8ac7c3b4e8785ea131ce18291d94cefef37ed4b
+#4 DONE 2.4s
+
+#3 [internal] load metadata for docker.io/library/alpine:latest
+#3 sha256:d4fb25f5b5c00defc20ce26f2efc4e288de8834ed5aa59dff877b495ba88fda6
+#3 DONE 3.0s
+
+#7 [stage-2  1/11] FROM docker.io/library/alpine:latest@sha256:234cb88d3020898631af0ccbbcca9a66ae7306ecd30c9720690858c1b007d2a0
+#7 sha256:4445c12087acb22d9b6ee2f65fcd0f40d4792f7a11835229414d61704f382be7
+#7 resolve docker.io/library/alpine:latest@sha256:234cb88d3020898631af0ccbbcca9a66ae7306ecd30c9720690858c1b007d2a0 done
+#7 DONE 0.0s
+
+#9 [stage-2  3/11] RUN apk update && apk upgrade && apk --no-cache add   su-exec   && echo "en_US.UTF-8 UTF-8" > /etc/profile.d/locale.sh
+#9 sha256:5a6e36b2b66af8ebf1cbc027e6c0c93ee339775bb642e9985a46788353461567
+#9 CACHED
+
+#8 [stage-2  2/11] RUN adduser -S dogecoin
+#8 sha256:f10098e06561cbe4396bca3685f24dd436656e405ddb1d571be06aa7c619c660
+#8 CACHED
+
+#10 [stage-2  4/11] RUN mkdir -p /app   && chown -R nobody:nogroup /app
+#10 sha256:0fbb30d5f3314a5eef476ca9ef9a4fc2ffdded3f2fad3c8961adcd0cdf6459c3
+#10 CACHED
+
+#11 [stage-2  5/11] WORKDIR /app
+#11 sha256:7d221102451bacec6f2c124b06f07a7505b96c89887b041f2f1715292e7fdbd4
+#11 CACHED
+
+#12 [musl-toolchain 1/8] FROM docker.io/library/ubuntu:focal@sha256:82becede498899ec668628e7cb0ad87b6e1c371cb8a1e597d83a47fac21d6af3
+#12 sha256:a7ceb7b61dd5f8a07aa5fff86390a400093515123f63cee13f88cc9da8b83f98
+#12 resolve docker.io/library/ubuntu:focal@sha256:82becede498899ec668628e7cb0ad87b6e1c371cb8a1e597d83a47fac21d6af3 done
+#12 DONE 0.0s
+
+#26 [build  7/19] RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
+#26 sha256:2ab61e1ef04a0d955bc9217188ea098192dda311380a4bde39fa79acbf3569cf
+#26 CACHED
+
+#27 [build  8/19] RUN apt-get install -y     curl     libbsd-dev     libunwind-dev     libtool-bin     gettext     lcov     autotools-dev     libtool     libtool-bin     pkg-config     bsdmainutils     automake     build-essential     python3     python3-zmq
+#27 sha256:ff18db458283b9d85d92912c72fc58d2e5a2bf614a961b3028a70cd35c6f6c64
+#27 CACHED
+
+#14 [musl-toolchain 3/8] RUN apt-get update -y   && DEBIAN_FRONTEND=noninteractive apt-get install -y   git   bash   bc   binutils   bison   libbison-dev   bzip2   build-essential   ccache   coreutils   diffutils   findutils   gawk   git   grep   gzip   libarchive-dev   libc6   lzip   libzstd-dev   m4   make   perl   rsync   sed   texinfo   wget   xz-utils   zstd
+#14 sha256:59a8b60dc5b42b54ecdb0b5386741587957e77d047b47e8b7816e3426f910f05
+#14 CACHED
+
+#16 [musl-toolchain 5/8] RUN git clone https://github.com/xanimo/mussel /mussel
+#16 sha256:c00a63e19965379a35bf8b49940e4b65197cd81bfdbd4c585b344c84cdce3cf2
+#16 CACHED
+
+#23 [build  4/19] RUN git reset --hard 9d512f36fa12cff48a031d379924837ccccd848d
+#23 sha256:421443cab4e06d2e35dcbf426340ebd7e892cdb6f853e804a820035b01c50e84
+#23 CACHED
+
+#15 [musl-toolchain 4/8] RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
+#15 sha256:75257fa3b68be528f642716462f06e154d91d4f5269121a29d608419601c18af
+#15 CACHED
+
+#21 [build  2/19] RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-1.14.4-dev
+#21 sha256:dff8a9cfced05903eb51bf6f10d664870cf7498d529082bdaa6669ae16d841c2
+#21 CACHED
+
+#22 [build  3/19] WORKDIR /dogecoin-1.14.4-dev
+#22 sha256:98053dad981cbf73408c7d5843d9d02b6346ec5d52d4b14a3585c17080143c08
+#22 CACHED
+
+#13 [musl-toolchain 2/8] RUN ln -snf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime && echo America/Los_Angeles > /etc/timezone
+#13 sha256:7236f01cfa945def436eeaebeeceeaf701c3e287196118d6c0866ebc2700b15e
+#13 CACHED
+
+#31 [build 12/19] RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure   --host=x86_64-linux-musl   --build=x86_64-linux-gnu   --target=x86_64-linux-musl   --mandir=/usr/share/man   --prefix=/app   --without-gui   --disable-gui-tests   --without-upnpc   --disable-bench   --disable-ccache   --disable-maintainer-mode   --enable-static-nss   --with-sysroot="/mussel/sysroot/"   LD_LIBRARY_PATH="/mussel/toolchain/lib/"   CC="x86_64-linux-musl-gcc"   CXX="x86_64-linux-musl-g++"   CROSS_COMPILE="x86_64-linux-musl-"   CHOST="x86_64-linux-musl"   CPPFLAGS="-I/mussel/toolchain/include/"   CFLAGS="-g0 -Os -static --static -fPIC"   CXXFLAGS="-DDEBUG_LOCKORDER -g -g0 -Os -s -static --static -fPIC -fvisibility=hidden"   LIBDIR="/mussel/toolchain/lib/"   LDFLAGS="-L/mussel/toolchain/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+#31 sha256:6680be6a1d1f382e4ce7e79c2e4065da721e250c4ada33f3e6a00702c4ff9403
+#31 CACHED
+
+#29 [build 10/19] RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
+#29 sha256:a3e6a2e0f8524b92314d20cd41065fbffffd2f2b8b82b2519205d1646dc49cc7
+#29 CACHED
+
+#20 [build  1/19] RUN apt-get update && apt-get -y install git
+#20 sha256:da14c52ac13d31f1a2374468664c793a58677d13caba9362d62112d3bbc482da
+#20 CACHED
+
+#18 [musl-toolchain 7/8] RUN ./check.sh
+#18 sha256:a78b7bdebc5404e8f1eae8bd190e4c0af88050461d9bbc24d1092d7b64df03b6
+#18 CACHED
+
+#17 [musl-toolchain 6/8] WORKDIR /mussel
+#17 sha256:f96cee2895e0703b71dd4fe8ddc7fdefc7fbcf67e2f421f55bb9e489d7a37dc4
+#17 CACHED
+
+#25 [build  6/19] COPY --from=musl-toolchain mussel/ mussel/
+#25 sha256:e408ab0c5326b68e9242481c03e4cd21d15fd58fa28b5ed45b9f9313eed94b46
+#25 CACHED
+
+#28 [build  9/19] RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
+#28 sha256:43c868654ef465c8cff1b73fcb7efea48992d23986f69c9b64f62818005ba781
+#28 CACHED
+
+#30 [build 11/19] RUN ./autogen.sh
+#30 sha256:e9f6af7ad2d522ce34075a6990be90da751cdf09c6f478066b1ca601ffa14bbb
+#30 CACHED
+
+#19 [musl-toolchain 8/8] RUN ./mussel.sh x86_64 -k -l -o -p
+#19 sha256:93ddc329ea359e087db2c72c4d9e8fa99a53297917b2b9d13f3a1ecee4c65d66
+#19 CACHED
+
+#24 [build  5/19] RUN mkdir -p mussel/
+#24 sha256:2b7194eb32e28735730d7137d49588caff4175392e0d32fd8a5f3056ccb23c1a
+#24 CACHED
+
+#32 [build 13/19] RUN make -s -j$(nproc)
+#32 sha256:1030d6f845754823ebd8fc7ee21205a664b55089526b41a63b1d404a4eb33fbd
+#32 CACHED
+
+#33 [build 14/19] RUN make check -j$(nproc)
+#33 sha256:d8f289ff4ef563d2137d1675d67dafeb8879d5b20de1292a9f33927f721d9b13
+#33 CACHED
+
+#40 [internal] load build context
+#40 sha256:fdc1715844b0b87a50adf1ed31a82d7c358789c971e859f9bb317cd530054a3d
+#40 transferring context: 107B done
+#40 DONE 0.0s
+
+#34 [build 15/19] RUN make install
+#34 sha256:73d714c7b124530e2abc64c4ff913210bf4a71d1b9fe98966daee7b81f3fcc51
+#34 0.103 Making install in src
+#34 0.549 make[1]: Entering directory '/dogecoin-1.14.4-dev/src'
+#34 1.105 make[2]: Entering directory '/dogecoin-1.14.4-dev/src'
+#34 1.260 make[3]: Entering directory '/dogecoin-1.14.4-dev/src/secp256k1'
+#34 1.260 make[3]: 'libsecp256k1.la' is up to date.
+#34 1.260 make[3]: Leaving directory '/dogecoin-1.14.4-dev/src/secp256k1'
+#34 1.811 make[3]: Entering directory '/dogecoin-1.14.4-dev/src'
+#34 1.960 make[4]: Entering directory '/dogecoin-1.14.4-dev/src/secp256k1'
+#34 1.960 make[4]: 'libsecp256k1.la' is up to date.
+#34 1.960 make[4]: Leaving directory '/dogecoin-1.14.4-dev/src/secp256k1'
+#34 1.972  /usr/bin/mkdir -p '/app/lib'
+#34 1.974  /bin/bash ../libtool   --mode=install /usr/bin/install -c   libdogecoinconsensus.la '/app/lib'
+#34 1.991 libtool: install: /usr/bin/install -c .libs/libdogecoinconsensus.lai /app/lib/libdogecoinconsensus.la
+#34 1.993 libtool: install: /usr/bin/install -c .libs/libdogecoinconsensus.a /app/lib/libdogecoinconsensus.a
+#34 1.996 libtool: install: chmod 644 /app/lib/libdogecoinconsensus.a
+#34 1.997 libtool: install: ranlib /app/lib/libdogecoinconsensus.a
+#34 2.028 libtool: finish: PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/sbin" ldconfig -n /app/lib
+#34 2.029 ----------------------------------------------------------------------
+#34 2.029 Libraries have been installed in:
+#34 2.030    /app/lib
+#34 2.030 
+#34 2.030 If you ever happen to want to link against installed libraries
+#34 2.030 in a given directory, LIBDIR, you must either use libtool, and
+#34 2.030 specify the full pathname of the library, or use the '-LLIBDIR'
+#34 2.030 flag during linking and do at least one of the following:
+#34 2.030    - add LIBDIR to the 'LD_LIBRARY_PATH' environment variable
+#34 2.030      during execution
+#34 2.030    - add LIBDIR to the 'LD_RUN_PATH' environment variable
+#34 2.030      during linking
+#34 2.030    - use the '-Wl,-rpath -Wl,LIBDIR' linker flag
+#34 2.030    - have your system administrator add LIBDIR to '/etc/ld.so.conf'
+#34 2.030 
+#34 2.030 See any operating system documentation about shared libraries for
+#34 2.030 more information, such as the ld(1) and ld.so(8) manual pages.
+#34 2.030 ----------------------------------------------------------------------
+#34 2.032  /usr/bin/mkdir -p '/app/bin'
+#34 2.035   /bin/bash ../libtool   --mode=install /usr/bin/install -c dogecoind dogecoin-cli dogecoin-tx test/test_dogecoin '/app/bin'
+#34 2.053 libtool: install: /usr/bin/install -c dogecoind /app/bin/dogecoind
+#34 2.061 libtool: install: /usr/bin/install -c dogecoin-cli /app/bin/dogecoin-cli
+#34 2.067 libtool: install: /usr/bin/install -c dogecoin-tx /app/bin/dogecoin-tx
+#34 2.073 libtool: install: /usr/bin/install -c test/test_dogecoin /app/bin/test_dogecoin
+#34 2.082  /usr/bin/mkdir -p '/app/include'
+#34 2.084  /usr/bin/install -c -m 644 script/bitcoinconsensus.h '/app/include'
+#34 2.086 make[3]: Leaving directory '/dogecoin-1.14.4-dev/src'
+#34 2.087 make[2]: Leaving directory '/dogecoin-1.14.4-dev/src'
+#34 2.088 make[1]: Leaving directory '/dogecoin-1.14.4-dev/src'
+#34 2.089 Making install in doc/man
+#34 2.090 make[1]: Entering directory '/dogecoin-1.14.4-dev/doc/man'
+#34 2.092 make[2]: Entering directory '/dogecoin-1.14.4-dev/doc/man'
+#34 2.092 make[2]: Nothing to be done for 'install-exec-am'.
+#34 2.093  /usr/bin/mkdir -p '/usr/share/man/man1'
+#34 2.096  /usr/bin/install -c -m 644 dogecoind.1 dogecoin-cli.1 dogecoin-tx.1 '/usr/share/man/man1'
+#34 2.099 make[2]: Leaving directory '/dogecoin-1.14.4-dev/doc/man'
+#34 2.099 make[1]: Leaving directory '/dogecoin-1.14.4-dev/doc/man'
+#34 2.100 make[1]: Entering directory '/dogecoin-1.14.4-dev'
+#34 2.103 make[2]: Entering directory '/dogecoin-1.14.4-dev'
+#34 2.103 make[2]: Nothing to be done for 'install-exec-am'.
+#34 2.103  /usr/bin/mkdir -p '/app/lib/pkgconfig'
+#34 2.105  /usr/bin/install -c -m 644 libbitcoinconsensus.pc '/app/lib/pkgconfig'
+#34 2.107 make[2]: Leaving directory '/dogecoin-1.14.4-dev'
+#34 2.107 make[1]: Leaving directory '/dogecoin-1.14.4-dev'
+#34 DONE 2.2s
+
+#35 [build 16/19] RUN strip /app/bin/dogecoin-cli
+#35 sha256:110eb4ed6bf7811c258980a257be1ce944729993dd7f915d2485577771468348
+#35 DONE 0.1s
+
+#36 [build 17/19] RUN strip /app/bin/dogecoin-tx
+#36 sha256:691fee85ad80cc06dedc33bbf689b68fe739fbdc6e69a0ad377f798b7a4f9901
+#36 DONE 0.1s
+
+#37 [build 18/19] RUN strip /app/bin/dogecoind
+#37 sha256:0ad42d66202f47e12449cf1b73e826412128b40192122677e2b2ca3695917612
+#37 DONE 0.1s
+
+#38 [build 19/19] RUN strip /app/lib/libdogecoinconsensus.a
+#38 sha256:ea205ee33477317ac677f31f0049c0de7203744a491323b739019a458b6e3886
+#38 DONE 0.1s
+
+#39 [stage-2  6/11] COPY --from=build /app /app
+#39 sha256:e945591ed16860753ba9aa1c393d7f35e646ae1b493ee765377cbf789d50c578
+#39 DONE 0.1s
+
+#41 [stage-2  7/11] COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
+#41 sha256:38a4f9d878a681fda002fb0161d909790ce02ac18bb5e4d2c65689be9256fbce
+#41 DONE 0.0s
+
+#42 [stage-2  8/11] COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
+#42 sha256:65996d8d08e2be79af0b166417fa97fb0fb4f348e86df482e39a7c940cc86316
+#42 DONE 0.0s
+
+#43 [stage-2  9/11] COPY docker-entrypoint.sh /entrypoint.sh
+#43 sha256:5578dd126ae86f943cdb26a72cc5ba3d1c56ed3f637d45e05f213c25436ae5a9
+#43 DONE 0.0s
+
+#44 [stage-2 10/11] RUN ["chmod", "+x", "/entrypoint.sh"]
+#44 sha256:003102816d47534b0cf5df6414ad3a2f937ac84f609e3c74b5c731ffa821c582
+#44 DONE 0.1s
+
+#45 [stage-2 11/11] RUN chmod -R 755 /app/*
+#45 sha256:801495cb7c9cfc8f5812e4a1800a7033f0cf20743bdc621c0aa7a3ad6c6abe76
+#45 DONE 0.1s
