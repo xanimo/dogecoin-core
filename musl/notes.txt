@@ -38,3 +38,17 @@ RUN /usr/bin/python3 qa/pull-tester/rpc-tests.py \
   -parallel=$(nproc) \
   --coverage \
   --tracerpc
+
+  touch <version>/whatevs.dummy && docker build <version>/ && rm <version>/whatevs.dummy
+
+  alpine build:
+  apk update && apk add build-base curl libzmq musl-de
+v python3 python3-dev zeromq-dev
+pip3 install --no-cache --upgrade pip setuptool
+s
+
+ENV PYTHONUNBUFFERED=1
+RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
+RUN python3 -m ensurepip
+RUN pip3 install --no-cache --upgrade pip setuptools
+

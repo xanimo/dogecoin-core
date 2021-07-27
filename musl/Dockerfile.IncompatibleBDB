@@ -79,14 +79,8 @@ RUN apt-get install -y \
     bsdmainutils \
     automake \
     build-essential \
-    python3 \
-    python3-zmq
-RUN make \
-  HOST=x86_64-linux-musl \
-  NO_QT=1 \
-  NO_UPNP=1 \
-  -s -j$(nproc) \
-  -C depends
+    python3
+RUN make HOST=x86_64-linux-musl NO_QT=1 NO_UPNP=1 -C depends
 RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
 RUN ./autogen.sh
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
@@ -132,22 +126,23 @@ ENV LC_ALL=en_US.UTF-8
 
 RUN adduser -S dogecoin
 RUN apk update && apk upgrade && apk --no-cache add \
+  git \
   su-exec \
+  python3-zmq \
   && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
 
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV DOGECOIN_VERSION=1.14.4-dev
-
+RUN mkdir -p /qa \
+  && chown -R nobody:nogroup /qa
+COPY --from=build /dogecoin-${DOGECOIN_VERSION}/ /qa
 RUN mkdir -p /app \
   && chown -R nobody:nogroup /app
 
 ENV PATH=/app/bin:$PATH
 
 WORKDIR /app
-RUN mkdir -p /src \
-  && chown -R nobody:nogroup /src
 COPY --from=build /app /app
-COPY --from=build /dogecoin-${DOGECOIN_VERSION} /app/src
 COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
 COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
 
@@ -164,3 +159,5 @@ ENTRYPOINT ["/entrypoint.sh"]
 RUN chmod -R 755 /app/*
 
 CMD ["dogecoind"]
+
+WORKDIR /qa
