@@ -92,7 +92,6 @@ RUN ./autogen.sh
 RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
   --host=x86_64-linux-musl \
   --build=x86_64-linux-gnu \
-  --target=x86_64-linux-musl \
   --mandir=/usr/share/man \
   --prefix=${DOGECOIN_PREFIX} \
   --without-gui \
@@ -131,8 +130,18 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 RUN adduser -S dogecoin
+  ENV PYTHONUNBUFFERED=1
 RUN apk update && apk upgrade && apk --no-cache add \
   su-exec \
+  python3-dev \
+  py3-pyzmq \
+  bash \
+  curl \
+  gcc \
+  musl-dev \
+  && ln -sf python3 /usr/bin/python \
+  && python3 -m ensurepip \
+  && pip3 install --no-cache --upgrade pip setuptools \
   && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
 
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
@@ -144,10 +153,11 @@ RUN mkdir -p /app \
 ENV PATH=/app/bin:$PATH
 
 WORKDIR /app
-RUN mkdir -p /src \
-  && chown -R nobody:nogroup /src
 COPY --from=build /app /app
-COPY --from=build /dogecoin-${DOGECOIN_VERSION} /app/src
+COPY --from=build /dogecoin-${DOGECOIN_VERSION} /app/dogecoin-${DOGECOIN_VERSION}
+
+RUN ./dogecoin-${DOGECOIN_VERSION}/qa/pull-tester/install-deps.sh
+
 COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
 COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
 

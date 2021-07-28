@@ -52,3 +52,38 @@ RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
 RUN python3 -m ensurepip
 RUN pip3 install --no-cache --upgrade pip setuptools
 
+py3-pyzmq bash curl gcc musl-dev
+
+SHELL := /bin/bash
+
+
+sudo apt-get update && apt-get install -y curl python3-zmq python3-dev gcc
+
+git fetch upstream && git rebase upstream/1.14.4-dev
+
+sudo apt-get install \
+build-essential \
+libtool \
+autotools-dev \
+automake \
+pkg-config \
+libssl-dev \
+libevent-dev \
+bsdmainutils \
+libdb++-dev \
+libboost-system-dev \
+libboost-filesystem-dev \
+libboost-chrono-dev \
+libboost-program-options-dev \
+libboost-test-dev \
+libboost-thread-dev
+
+libdb++-dev
+apt-get install libboost-system-dev libboost-filesystem-dev libboost-chrono-dev libboost-program-options-dev libboost-test-dev libboost-thread-dev
+
+
+./configure \
+--without-gui \
+--disable-gui-tests \
+--with-incompatible-bdb
+
