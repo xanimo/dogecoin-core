@@ -1,0 +1,100 @@
+FROM ubuntu:focal AS build
+
+ENV TZ=America/Los_Angeles
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update && apt-get install -y \
+git \
+curl \
+build-essential \
+libtool-bin \
+autotools-dev \
+automake \
+pkg-config \
+libssl-dev \
+libevent-dev \
+bsdmainutils \
+python3-dev \
+&& rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/xanimo/dogecoin.git
+
+WORKDIR /dogecoin
+
+RUN make \
+  HOST=x86_64-linux-gnu \
+  NO_QT=1 \
+  NO_UPNP=1 \
+  -s -j$(nproc) \
+  -C depends
+RUN libtool --finish $PWD/depends/x86_64-linux-gnu/lib
+RUN ./autogen.sh
+RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-gnu/share/config.site" ./configure \
+  --without-gui \
+  --disable-gui-tests \
+  --without-upnpc \
+  --disable-bench \
+  --disable-ccache \
+  --disable-maintainer-mode \
+  # --enable-static-nss \
+  --enable-hardcoded-path-in-tests \
+  # --enable-bind-now \
+  --disable-shared \
+  --enable-static-pie \
+  # --enable-stack-protector=all \
+  CFLAGS="-g0 -Os -static --static -fPIC" \
+  CXXFLAGS="-DDEBUG_LOCKORDER -g -g0 -Os -s -static --static -fPIC -fvisibility=hidden" \
+  LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-O2"
+RUN make -j$(nproc)
+# RUN make check -j$(nproc)
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-cli
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-tx
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoind
+# RUN strip ${DOGECOIN_PREFIX}/.libs/libdogecoinconsensus.a
+
+FROM ubuntu:focal AS test
+
+ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
+ENV PATH=/dogecoin/src:$PATH
+ENV PATH=/dogecoin/src/test:$PATH
+
+RUN apt-get update && apt-get install -y \
+  curl \
+  gcc \
+  git \
+  gosu \
+  nano \
+  python3-zmq \
+  python3-dev
+
+RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin
+
+COPY --from=build /dogecoin/src/dogecoind /dogecoin/src/dogecoind
+COPY --from=build /dogecoin/src/dogecoin-cli /dogecoin/src/dogecoin-cli
+COPY --from=build /dogecoin/src/dogecoin-tx /dogecoin/src/dogecoin-tx
+COPY --from=build /dogecoin/src/test/test_dogecoin /dogecoin/src/test/test_dogecoin
+COPY --from=build /dogecoin/src/.libs /dogecoin/src/.libs
+COPY --from=build /dogecoin/qa/pull-tester/tests_config.py /dogecoin/qa/pull-tester/tests_config.py
+
+COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
+COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
+
+WORKDIR /dogecoin/qa/pull-tester
+
+RUN ./install-deps.sh
+
+WORKDIR /dogecoin
+
+COPY docker-entrypoint-gosu.sh /entrypoint.sh
+RUN ["chmod", "+x", "/entrypoint.sh"]
+
+VOLUME ["/home/dogecoin/.dogecoin"]
+VOLUME ["/sys/fs/cgroup"]
+
+EXPOSE 22555 22556 44555 44556
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+RUN chmod -R 755 /dogecoin/*
+
+CMD ["dogecoind"]

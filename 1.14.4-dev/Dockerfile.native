@@ -1,0 +1,67 @@
+FROM muslcc/x86_64:x86_64-linux-musl
+
+LABEL maintainer.0="xanimo (@xanimo)"
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+ENV DOGECOIN_VERSION=1.14.4-dev
+ENV DOGECOIN_PREFIX=/app
+
+RUN apk add git
+RUN git clone https://github.com/xanimo/dogecoin.git
+
+WORKDIR /dogecoin
+
+RUN git checkout ${DOGECOIN_VERSION} && git reset --hard f12e2a6ff7d7e2713ac0d461ad63431bcf78cae5
+
+RUN apk add autoconf automake bash bison build-base curl libbsd libbsd-dev libtool linux-headers make musl musl-dev pkgconf python3 perl xz boost-dev \
+  libevent-dev \
+  openssl-dev \
+  zeromq-dev \
+  python2
+RUN make HOST=x86_64-linux-musl NO_QT=1 -C depends
+RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
+
+# RUN sed -i '/AC_PREREQ/a\AR_FLAGS=cr' src/univalue/configure.ac
+# RUN sed -i '/AX_PROG_CC_FOR_BUILD/a\AR_FLAGS=cr' src/secp256k1/configure.ac
+# RUN sed -i s:sys/fcntl.h:fcntl.h: src/compat.h
+RUN ./autogen.sh
+RUN CONFIG_SITE=$PWD/depends/x86_64-linux-musl/share/config.site ./configure \
+    --host=x86_64-linux-musl \
+    --build=x86_64-linux-gnu \
+    --mandir=/usr/share/man \
+    --prefix=${DOGECOIN_PREFIX} \
+    --without-gui \
+    --disable-gui-tests \
+    --without-upnpc \
+    --disable-bench \
+    --disable-ccache \
+    --disable-maintainer-mode \
+    CC=musl-gcc \
+    CXX=musl-g++ \
+    CROSS_COMPILE=x86_64-linux-musl- \
+    CHOST=x86_64-linux-musl \
+    CFLAGS="-O2 -g" \
+    CPPFLAGS="-I/usr/local/bdb/include/" \
+    CXXFLAGS="-Wno-cpp -O2 -g" \
+    LDFLAGS="-L/usr/local/bdb/lib/ -static-libstdc++"
+# CC="musl-gcc -g -specs=/usr/lib/x86_64-linux-musl/musl-gcc.specs" \
+# CXX=musl-g++ \
+# CPPFLAGS="-I/usr/local/bdb/include/" \
+# LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+RUN make -s -j$(nproc)
+RUN make check -j$(nproc)
+RUN make install -j$(nproc)
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-cli
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoin-tx
+RUN strip ${DOGECOIN_PREFIX}/bin/dogecoind
+RUN strip ${DOGECOIN_PREFIX}/lib/libdogecoinconsensus.a
+
+
+RUN apk add libxkbcommon-x11 \
+    && echo "en_US.UTF-8 UTF-8" > /etc/profile.d/locale.sh
+
+ENV PATH=${DOGECOIN_PREFIX}/bin:$PATH
+
+# CMD [ "src/dogecoind" ]
