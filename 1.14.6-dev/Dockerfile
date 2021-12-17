@@ -67,10 +67,10 @@ RUN CONFIG_SITE="${PWD}/depends/${HOST_TRIPLET}/share/config.site" ./configure \
   LDFLAGS="-s -static-libgcc -static-libstdc++ -Wl,-O2"
 RUN make -j$(nproc)
 RUN make check -j$(nproc)
-RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-cli
-RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-tx
-RUN strip ${DOGECOIN_PREFIX}/src/dogecoind
-RUN strip ${DOGECOIN_PREFIX}/.libs/libdogecoinconsensus.a
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-cli
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoin-tx
+# RUN strip ${DOGECOIN_PREFIX}/src/dogecoind
+# RUN strip ${DOGECOIN_PREFIX}/.libs/libdogecoinconsensus.a
 
 FROM debian:bullseye-slim AS test
 
