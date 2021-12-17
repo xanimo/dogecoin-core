@@ -1,13 +1,14 @@
 FROM debian:bullseye-slim AS build
 
+WORKDIR /build
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 # Specify release variables
 ARG RLS_VERSION=1.14.6-dev
 ARG RLS_OS=linux
 ARG RLS_LIB=gnu
-ARG RLS_ARCH=
-
-ARG TARGETPLATFORM
-ARG BUILDPLATFORM
+ARG RLS_ARCH=x86_64
 
 # determine architecture, download release binary
 # and verify against random OK signer and pinned shasums
@@ -18,8 +19,7 @@ RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture) \
     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi \
     && if [ "${RLS_ARCH}" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi
 
-ENV TARGETHOST=${RLS_ARCH}-${RLS_OS}-${RLS_LIB}
-RUN echo $TARGETHOST && exit 1
+ENV HOST_TRIPLET=${RLS_ARCH}-${RLS_OS}-${RLS_LIB}
 
 ENV TZ=America/Los_Angeles
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -38,20 +38,18 @@ bsdmainutils \
 python3-dev \
 && rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/dogecoin/dogecoin.git \
-  && git checkout ${RLS_VERSION}
+RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin \
+  && bash -xc "pushd /dogecoin; git checkout ${RLS_VERSION}; popd;"
 
 WORKDIR /dogecoin
 
 RUN make \
-  HOST=${TARGETHOST} \
+  HOST=${HOST_TRIPLET} \
   NO_QT=1 \
-  NO_UPNP=1 \
-  -s -j$(nproc) \
   -C depends
-RUN libtool --finish $PWD/depends/${TARGETHOST}/lib
+RUN libtool --finish $PWD/depends/${HOST_TRIPLET}/lib
 RUN ./autogen.sh
-RUN CONFIG_SITE="${PWD}/depends/${TARGETHOST}/share/config.site" ./configure \
+RUN CONFIG_SITE="${PWD}/depends/${HOST_TRIPLET}/share/config.site" ./configure \
   --without-gui \
   --disable-gui-tests \
   --without-upnpc \
@@ -89,14 +87,21 @@ RUN apt-get update && apt-get install -y \
   python3-zmq \
   python3-dev
 
-RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin
+RUN git clone \
+  --depth 1  \
+  --filter=blob:none  \
+  --sparse \
+  https://github.com/xanimo/dogecoin.git
+
+WORKDIR /dogecoin
+
+RUN git sparse-checkout set qa
 
 COPY --from=build /dogecoin/src/dogecoind /dogecoin/src/dogecoind
 COPY --from=build /dogecoin/src/dogecoin-cli /dogecoin/src/dogecoin-cli
 COPY --from=build /dogecoin/src/dogecoin-tx /dogecoin/src/dogecoin-tx
 COPY --from=build /dogecoin/src/test/test_dogecoin /dogecoin/src/test/test_dogecoin
 COPY --from=build /dogecoin/src/.libs /dogecoin/src/.libs
-COPY --from=build /dogecoin/qa/pull-tester/tests_config.py /dogecoin/qa/pull-tester/tests_config.py
 
 COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
 COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid

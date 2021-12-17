@@ -4,15 +4,14 @@ SHELL ["/bin/bash", "-c"]
 
 LABEL maintainer.0="xanimo (@xanimo)"
 
-RUN useradd -r dogecoin \
-  && apt-get update -y \
+RUN apt-get update -y \
   && apt-get install -y wget gnupg gosu ruby \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG TARGETPLATFORM
 
-ENV DOGECOIN_VERSION=1.14.3
+ENV DOGECOIN_VERSION=1.14.5
 ENV DOGECOIN_PREFIX=/opt/dogecoin-${DOGECOIN_VERSION}
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
 ENV PATH=/opt/dogecoin-${DOGECOIN_VERSION}/bin:$PATH
@@ -20,10 +19,10 @@ ENV PATH=/opt/dogecoin-${DOGECOIN_VERSION}/bin:$PATH
 COPY /gverify /gverify
 COPY /verify.sh /verify.sh
 
-RUN set -ex \
-  && if [ "${TARGETPLATFORM}" = "linux/amd64" ]; then export TARGETPLATFORM=x86_64-linux-gnu; fi \
-  && if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then export TARGETPLATFORM=aarch64-linux-gnu; fi \
-  && if [ "${TARGETPLATFORM}" = "linux/arm/v7" ]; then export TARGETPLATFORM=arm-linux-gnueabihf; fi \
+RUN set -ex && TARGETPLATFORM=$(dpkg --print-architecture) \
+  && if [ "${TARGETPLATFORM}" = "amd64" ]; then export TARGETPLATFORM=x86_64-linux-gnu; fi \
+  && if [ "${TARGETPLATFORM}" = "arm64" ]; then export TARGETPLATFORM=aarch64-linux-gnu; fi \
+  && if [ "${TARGETPLATFORM}" = "arm/v7" ]; then export TARGETPLATFORM=arm-linux-gnueabihf; fi \
   && for key in \
     E9E1D8252D569306 \
   ; do \
@@ -53,4 +52,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 RUN dogecoind -version | grep "Dogecoin Core Daemon version v${DOGECOIN_VERSION}"
 
-CMD ["dogecoind"]
+CMD ["dogecoind", "-printtoconsole"]

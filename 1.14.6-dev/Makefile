@@ -4,7 +4,7 @@ deps:
 build:
 	docker buildx build --platform linux/386,linux/amd64,linux/arm64,linux/arm \
 	-t ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} \
-	--progress plain . 2> ${PWD}/build-log.txt
+	--progress plain . --load 2> ${PWD}/build-log.txt
 
 buildx:
 	docker buildx create --use --name ${shell basename -s .git `git config --get remote.origin.url`} --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
