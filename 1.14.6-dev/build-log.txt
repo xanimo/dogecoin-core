@@ -1,0 +1,106 @@
+time="2021-12-17T01:42:47-08:00" level=warning msg="No output specified for docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push or to load image into docker use --load"
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 3.47kB done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.0s
+
+#3 [linux/arm/v7 internal] load metadata for docker.io/library/debian:bullseye-slim
+#3 DONE 0.5s
+
+#4 [linux/amd64 internal] load metadata for docker.io/library/debian:bullseye-slim
+#4 DONE 0.5s
+
+#5 [linux/arm64 internal] load metadata for docker.io/library/debian:bullseye-slim
+#5 DONE 0.5s
+
+#6 [linux/386 internal] load metadata for docker.io/library/debian:bullseye-slim
+#6 DONE 0.5s
+
+#32 [internal] load build context
+#32 DONE 0.0s
+
+#7 [linux/amd64 build  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#7 resolve docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c 0.1s done
+#7 CACHED
+
+#32 [internal] load build context
+#32 transferring context: 100B done
+#32 DONE 0.1s
+
+#74 [linux/386 test  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#74 resolve docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c 0.1s done
+#74 DONE 0.1s
+
+#107 [linux/arm/v7 test  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#107 resolve docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c 0.1s done
+#107 ...
+
+#10 [linux/amd64 build  2/17] RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture)     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi     && if [ "" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi
+#10 0.208 + dpkg --print-architecture
+#10 0.208 + ARCHITECTURE=amd64
+#10 0.208 + [ amd64 = amd64 ]
+#10 0.209 + RLS_ARCH=x86_64
+#10 0.209 + [ amd64 = arm64 ]
+#10 0.209 + [ amd64 = armhf ]
+#10 0.209 + [ amd64 = i386 ]
+#10 0.209 + [ x86_64 =  ]
+#10 DONE 0.4s
+
+#107 [linux/arm/v7 test  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#107 sha256:ba82a1312e1efdcd1cc6eb31cd40358dcec180da31779dac399cba31bf3dc206 0B / 26.57MB 0.1s
+#107 DONE 0.1s
+
+#11 [linux/amd64 build  3/17] RUN echo -linux-gnu && exit 1
+#11 0.077 -linux-gnu
+#11 ERROR: process "/bin/sh -c echo $TARGETHOST && exit 1" did not complete successfully: exit code: 1
+
+#8 [linux/amd64 test  2/17] RUN apt-get update && apt-get install -y   curl   gcc   git   gosu   nano   python3-zmq   python3-dev
+#8 0.416 Get:1 http://deb.debian.org/debian bullseye InRelease [116 kB]
+#8 0.416 Get:2 http://security.debian.org/debian-security bullseye-security InRelease [44.1 kB]
+#8 CANCELED
+
+#75 [linux/386 test  2/17] RUN apt-get update && apt-get install -y   curl   gcc   git   gosu   nano   python3-zmq   python3-dev
+#75 CANCELED
+
+#41 [linux/arm64 test  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#41 resolve docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c 0.1s done
+#41 sha256:968621624b326084ed82349252b333e649eaab39f71866edb2b9a4f847283680 0B / 30.06MB 0.1s
+#41 DONE 0.1s
+
+#108 [linux/arm/v7 test  2/17] RUN apt-get update && apt-get install -y   curl   gcc   git   gosu   nano   python3-zmq   python3-dev
+#108 CANCELED
+
+#74 [linux/386 test  1/17] FROM docker.io/library/debian:bullseye-slim@sha256:656b29915fc8a8c6d870a1247aad7796ce296729b0ae95e168d1cfe30dd2fb3c
+#74 sha256:2df7932f17d752876c686aa22054692a38e88e182dd7b6a5cca7ffce4ffe6f84 0B / 32.38MB 0.1s
+#74 DONE 0.3s
+
+#42 [linux/arm64 test  2/17] RUN apt-get update && apt-get install -y   curl   gcc   git   gosu   nano   python3-zmq   python3-dev
+#42 CANCELED
+
+#44 [linux/arm64 build  2/17] RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture)     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi     && if [ "" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi
+#44 CANCELED
+
+#110 [linux/arm/v7 build  2/17] RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture)     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi     && if [ "" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi
+#110 CANCELED
+
+#77 [linux/386 build  2/17] RUN set -ex && ARCHITECTURE=$(dpkg --print-architecture)     && if [ "${ARCHITECTURE}" = "amd64" ]; then RLS_ARCH=x86_64 ; fi     && if [ "${ARCHITECTURE}" = "arm64" ]; then RLS_ARCH=aarch64; fi     && if [ "${ARCHITECTURE}" = "armhf" ]; then RLS_ARCH=arm && RLS_LIB=gnueabihf; fi     && if [ "${ARCHITECTURE}" = "i386" ]; then RLS_ARCH=i686-pc; fi     && if [ "" = "" ]; then echo "Could not determine architecture" >&2; exit 1; fi
+#77 CANCELED
+------
+ > [linux/amd64 build  3/17] RUN echo -linux-gnu && exit 1:
+#11 0.077 -linux-gnu
+------
+Dockerfile:22
+--------------------
+  20 |     
+  21 |     ENV TARGETHOST=${RLS_ARCH}-${RLS_OS}-${RLS_LIB}
+  22 | >>> RUN echo $TARGETHOST && exit 1
+  23 |     
+  24 |     ENV TZ=America/Los_Angeles
+--------------------
+error: failed to solve: process "/bin/sh -c echo $TARGETHOST && exit 1" did not complete successfully: exit code: 1
