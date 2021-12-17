@@ -70,7 +70,7 @@ GITIAN_DESCRIPTOR_URL=https://raw.githubusercontent.com/dogecoin/dogecoin/master
 wget -O - https://github.com/dogecoin/dogecoin/archive/master.tar.gz | tar xz --strip=2 "dogecoin-master/contrib/gitian-keys"
 
 # fetch and strip gitian.sigs/1.14.3-linux for verifying precompiled dogecoind binaries
-wget -O - https://github.com/dogecoin/gitian.sigs/archive/master.tar.gz | tar xz --strip=0 "gitian.sigs-master/1.14.3-linux"
+wget -O - https://github.com/dogecoin/gitian.sigs/archive/master.tar.gz | tar xz --strip=0 "gitian.sigs-master/${DOGECOIN_VERSION}-linux"
 # cd gitian-keys && gpg --dry-run --keyid-format long --import <*.pgp && gpg --refresh-keys
 
 cd gitian-keys
@@ -93,7 +93,7 @@ popd ;'
 # iterate through gitian.sigs-master and verify signers via gpg
 for i in *; do
     if [ "$(find . -type f -name '*.assert')" ];then
-        gpg --verify "$i/dogecoin-linux-1.14-build.assert.sig"
+        gpg --verify "$i/dogecoin-linux-${DOGECOIN_VERSION:0:4}-build.assert.sig"
     fi
 done
 
@@ -105,7 +105,7 @@ rm gitian-linux.yml
 wget ${GITIAN_DESCRIPTOR_URL}
 
 # verify signers additional time via gitian-builder gverify script
-./gverify --destination ./gitian.sigs-master/ --release 1.14.3-linux ./gitian-linux.yml
+./gverify --destination ./gitian.sigs-master/ --release ${DOGECOIN_VERSION}-linux ./gitian-linux.yml
 
 # pass -f argument to filehash function and set env var 
 FILEHASH=$(fileHash "$parameterF")
@@ -113,7 +113,7 @@ FILEHASH=$(fileHash "$parameterF")
 # echo `pwd`
 
 # count number of verified signers to assert against build.assert
-count=`grep -r "${FILEHASH}" gitian.sigs-master/1.14.3-linux/ | wc -l`
+count=`grep -r "${FILEHASH}" gitian.sigs-master/${DOGECOIN_VERSION}-linux/ | wc -l`
 
 # if at least 4 verified signers contain precompiled dogecoin binaries
 # filehash in build.assert complete verification by cleaning up directory

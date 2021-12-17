@@ -10,7 +10,7 @@ fi
 if [ $(echo "$1" | cut -c1) = "-" ] || [ "$1" = "dogecoind" ]; then
   mkdir -p "$DOGECOIN_DATA"
   chmod 700 "$DOGECOIN_DATA"
-  chown -R dogecoin "$DOGECOIN_DATA"
+  chown -R nobody:nogroup "$DOGECOIN_DATA"
 
   echo "$0: setting data directory to $DOGECOIN_DATA"
 
@@ -19,7 +19,7 @@ fi
 
 if [ "$1" = "dogecoind" ] || [ "$1" = "dogecoin-cli" ] || [ "$1" = "dogecoin-tx" ]; then
   echo
-  exec gosu dogecoin "$@"
+  exec gosu nobody "$@"
 fi
 
 echo
