@@ -1,0 +1,67 @@
+# Build stage for Dogecoin Core
+FROM xanimo/musl-toolchain AS build
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libbsd-dev \
+    libunwind-dev \
+    libtool-bin \
+    gettext \
+    lcov \
+    autotools-dev \
+    libtool \
+    libtool-bin \
+    pkg-config \
+    bsdmainutils \
+    automake \
+    build-essential \
+    python3 \
+    python3-zmq \
+    python3-distutils \
+    python3-dev
+ENV DOGECOIN_VERSION=1.14.6-dev
+RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
+RUN git clone https://github.com/dogecoin/dogecoin.git /dogecoin-${DOGECOIN_VERSION} \
+  && bash -xc "pushd /dogecoin-${DOGECOIN_VERSION}; git checkout ${DOGECOIN_VERSION}; popd;"
+WORKDIR /dogecoin-${DOGECOIN_VERSION}
+RUN make \
+  HOST=x86_64-linux-musl \
+  NO_QT=1 \
+  -C depends
+RUN libtool --finish $PWD/depends/x86_64-linux-musl/lib
+RUN ./autogen.sh
+RUN CONFIG_SITE="${PWD}/depends/x86_64-linux-musl/share/config.site" ./configure \
+  --host=x86_64-linux-musl \
+  --build=x86_64-linux-gnu \
+  --target=x86_64-linux-musl \
+  --mandir=/usr/share/man \
+  --without-gui \
+  --disable-gui-tests \
+  --disable-maintainer-mode \
+  --enable-debug \
+  --enable-hardening \
+  --enable-static-nss \
+  --enable-hardcoded-path-in-tests \
+  --enable-bind-now \
+  --disable-shared \
+  --enable-static-pie \
+  --enable-stack-protector=all \
+  --with-sysroot="/mussel/sysroot/" \
+  LD_LIBRARY_PATH="/mussel/toolchain/lib/" \
+  CPPFLAGS="-I/mussel/toolchain/include/" \
+  CFLAGS="-g0 -Os -static --static -fPIC" \
+  CXXFLAGS="-DDEBUG_LOCKORDER -g -g0 -Os -s -static --static -fPIC -fvisibility=hidden" \
+  LIBDIR="/mussel/toolchain/lib/" \
+  LDFLAGS="-L/mussel/toolchain/lib/ -s -static-libgcc -static-libstdc++ -Wl,-rpath -Wl,LIBDIR,-O2"
+RUN make -s -j$(nproc)
+RUN make check -j$(nproc)
+RUN strip src/dogecoin-cli
+RUN strip src/dogecoin-tx
+RUN strip src/dogecoind
+WORKDIR /dogecoin-${DOGECOIN_VERSION}/qa/pull-tester
+RUN ./install-deps.sh
+WORKDIR /dogecoin-${DOGECOIN_VERSION}
+RUN qa/pull-tester/rpc-tests.py -parallel=$(nproc) --coverage
+RUN src/bench/bench_dogecoin
+COPY /docker-entrypoint.sh /dogecoin-${DOGECOIN_VERSION}/entrypoint.sh
+RUN rm -rf /mussel

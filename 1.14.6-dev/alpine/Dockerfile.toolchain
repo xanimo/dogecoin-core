@@ -1,0 +1,57 @@
+# Build stage for mussel toolchain
+FROM ubuntu:focal as musl-toolchain
+
+ENV TZ=America/Los_Angeles
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get update -y \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  git \
+  bash \
+  bc \
+  binutils \
+  bison \
+  libbison-dev \
+  bzip2 \
+  build-essential \
+  ccache \
+  coreutils \
+  diffutils \
+  findutils \
+  gawk \
+  git \
+  grep \
+  gzip \
+  libarchive-dev \
+  libc6 \
+  lzip \
+  libzstd-dev \
+  m4 \
+  make \
+  perl \
+  rsync \
+  sed \
+  texinfo \
+  wget \
+  xz-utils \
+  zstd
+RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
+
+RUN git clone https://github.com/firasuke/mussel /mussel
+
+WORKDIR /mussel
+
+RUN ./check.sh
+
+ENV PKG_CONFIG_PATH=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
+ENV PKG_CONFIG_LIBDIR=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
+ENV PKG_CONFIG_SYSROOT_DIR=$MSYSROOT
+
+ENV PKG_CONFIG_SYSTEM_INCLUDE_PATH=$MSYSROOT/usr/include
+ENV PKG_CONFIG_SYSTEM_LIBRARY_PATH=$MSYSROOT/usr/lib
+
+RUN ./mussel.sh x86_64 -p
+
+RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
+
+CMD ["/bin/bash"]
