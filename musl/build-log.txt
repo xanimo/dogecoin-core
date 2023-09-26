@@ -1,15 +1,24 @@
-time="2021-07-27T12:31:51-07:00" level=warning msg="No output specified for docker-container driver. Build result will only remain in the build cache. To push result image into registry use --push or to load image into docker use --load"
-#1 [internal] load build definition from Dockerfile
-#1 sha256:2e58f17fe1707e84a7119910cec94e64f440bf845992d0434423a04a9aca97ae
-#1 transferring dockerfile: 4.16kB done
-#1 DONE 0.0s
+#1 [internal] booting buildkit
+#1 starting container buildx_buildkit_dogecoin-core
+#1 starting container buildx_buildkit_dogecoin-core 1.0s done
+#1 DONE 1.0s
 
-#2 [internal] load .dockerignore
-#2 sha256:c09159fc93c9b8707f0c401a8f7225231a8fad19842312f803f86b5406b4bcc8
-#2 transferring context: 2B done
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 3.41kB done
 #2 DONE 0.0s
 
-#4 [internal] load metadata for docker.io/library/ubuntu:focal
-#4 sha256:d8099b9e2a8d5949e23c58d0d8ac7c3b4e8785ea131ce18291d94cefef37ed4b
-time="2021-07-27T12:31:54-07:00" level=error msg="got 3 SIGTERM/SIGINTs, forcing shutdown"
-error: failed to solve: rpc error: code = Canceled desc = context canceled
+#3 [internal] load metadata for docker.io/xanimo/musl-toolchain:latest
+#3 ...
+
+#4 [auth] library/alpine:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#5 [auth] xanimo/musl-toolchain:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#6 [internal] load metadata for docker.io/library/alpine:latest
+#6 CANCELED
+
+#3 [internal] load metadata for docker.io/xanimo/musl-toolchain:latest
+#3 CANCELED
+ERROR: failed to solve: Canceled: context canceled

@@ -1,20 +1,20 @@
 build:
-	docker buildx build -t ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} --progress plain . 2> ${PWD}/build-log.txt
+	docker buildx build -t xanimo/${shell basename -s .git `git config --get remote.origin.url`}:alpine --progress plain --load .
 
 buildx:
-	docker buildx create --use --name ${shell basename -s .git `git config --get remote.origin.url`} --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
+	docker buildx create --use --node ${shell basename -s .git `git config --get remote.origin.url`} --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
 
 run:
 	docker run -v ${PWD}:${PWD} \
-	-it --rm ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current}
+	-it --rm xanimo/${shell basename -s .git `git config --get remote.origin.url`}:alpine
 
 run-sh:
 	docker run -v ${PWD}:${PWD} \
-	-it --rm ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} /bin/sh
+	-it --rm xanimo/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} /bin/sh
 
 test:
 	docker run -v ${PWD}:${PWD} \
-	-it --rm ${USER}/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} \
+	-it --rm xanimo/${shell basename -s .git `git config --get remote.origin.url`}:${shell git branch --show-current} \
 	test_dogecoin \
 	--build_info=1 \
 	--auto_start_dbg=1 \

@@ -19,7 +19,7 @@ fi
 
 if [ "$1" = "dogecoind" ] || [ "$1" = "dogecoin-cli" ] || [ "$1" = "dogecoin-tx" ] || [ "$1" = "test_dogecoin" ]; then
   echo
-  exec su-exec dogecoin "$@"
+  exec su-exec $1 "$@"
 fi
 
 echo

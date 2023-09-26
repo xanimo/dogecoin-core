@@ -1,47 +1,5 @@
-# Build stage for mussel toolchain
-FROM ubuntu:focal as musl-toolchain
-
-ENV TZ=America/Los_Angeles
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-RUN apt-get update -y \
-  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  git \
-  bash \
-  bc \
-  binutils \
-  bison \
-  libbison-dev \
-  bzip2 \
-  build-essential \
-  ccache \
-  coreutils \
-  diffutils \
-  findutils \
-  gawk \
-  git \
-  grep \
-  gzip \
-  libarchive-dev \
-  libc6 \
-  lzip \
-  libzstd-dev \
-  m4 \
-  make \
-  perl \
-  rsync \
-  sed \
-  texinfo \
-  wget \
-  xz-utils \
-  zstd
-RUN ln -s /lib/x86_64-linux-gnu/libc.so.6 /lib/libc.so.6
-
-RUN git clone https://github.com/xanimo/mussel /mussel
-
-WORKDIR /mussel
-
-RUN ./check.sh
+# Build stage for Dogecoin Core
+FROM xanimo/musl-toolchain AS build
 
 ENV PKG_CONFIG_PATH=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
 ENV PKG_CONFIG_LIBDIR=$MSYSROOT/usr/lib/pkgconfig:$MSYSROOT/usr/share/pkgconfig
@@ -50,23 +8,20 @@ ENV PKG_CONFIG_SYSROOT_DIR=$MSYSROOT
 ENV PKG_CONFIG_SYSTEM_INCLUDE_PATH=$MSYSROOT/usr/include
 ENV PKG_CONFIG_SYSTEM_LIBRARY_PATH=$MSYSROOT/usr/lib
 
-RUN ./mussel.sh x86_64 -k -l -o -p
-
-# Build stage for Dogecoin Core
-FROM musl-toolchain AS build
 RUN apt-get update && apt-get -y install git
-ENV DOGECOIN_VERSION=1.14.4-dev
+ENV DOGECOIN_VERSION=v1.14.6
 ENV DOGECOIN_PREFIX=/app
 
-RUN git clone https://github.com/xanimo/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
+RUN git clone https://github.com/dogecoin/dogecoin.git /dogecoin-${DOGECOIN_VERSION}
 
 WORKDIR /dogecoin-${DOGECOIN_VERSION}
-RUN git reset --hard 9d512f36fa12cff48a031d379924837ccccd848d
+RUN git checkout ${DOGECOIN_VERSION}
 RUN mkdir -p mussel/
-COPY --from=musl-toolchain mussel/ mussel/
+COPY --from=xanimo/musl-toolchain mussel/ mussel/
 RUN PATH=/mussel/toolchain/bin:/usr/bin:/bin
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     curl \
+    binutils \
     libbsd-dev \
     libunwind-dev \
     libtool-bin \
@@ -130,22 +85,13 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 RUN adduser -S dogecoin
-  ENV PYTHONUNBUFFERED=1
+
 RUN apk update && apk upgrade && apk --no-cache add \
   su-exec \
-  python3-dev \
-  py3-pyzmq \
-  bash \
-  curl \
-  gcc \
-  musl-dev \
-  && ln -sf python3 /usr/bin/python \
-  && python3 -m ensurepip \
-  && pip3 install --no-cache --upgrade pip setuptools \
   && echo "${LANG} UTF-8" > /etc/profile.d/locale.sh
 
 ENV DOGECOIN_DATA=/home/dogecoin/.dogecoin
-ENV DOGECOIN_VERSION=1.14.4-dev
+ENV DOGECOIN_VERSION=v1.14.6
 
 RUN mkdir -p /app \
   && chown -R nobody:nogroup /app
@@ -153,13 +99,13 @@ RUN mkdir -p /app \
 ENV PATH=/app/bin:$PATH
 
 WORKDIR /app
-COPY --from=build /app /app
-COPY --from=build /dogecoin-${DOGECOIN_VERSION} /app/dogecoin-${DOGECOIN_VERSION}
+COPY --from=build \
+    /dogecoin-${DOGECOIN_VERSION}/src/dogecoind \
+    /dogecoin-${DOGECOIN_VERSION}/src/dogecoin-cli \
+    /dogecoin-${DOGECOIN_VERSION}/src/dogecoin-tx /app/bin/
 
-RUN ./dogecoin-${DOGECOIN_VERSION}/qa/pull-tester/install-deps.sh
-
-COPY dogecoin.conf /home/dogecoin/.dogecoin/dogecoin.conf
-COPY dogecoind.pid /home/dogecoin/.dogecoin/dogecoin.pid
+COPY dogecoin.conf /app/dogecoin.conf
+COPY dogecoind.pid /app/dogecoin.pid
 
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN ["chmod", "+x", "/entrypoint.sh"]
@@ -173,4 +119,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 RUN chmod -R 755 /app/*
 
-CMD ["dogecoind"]
+CMD ["dogecoind", "-datadir=/app"]
